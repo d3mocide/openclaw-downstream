@@ -39,8 +39,10 @@ RUN mkdir -p /out && \
 # ── Stage 2: Build ──────────────────────────────────────────────
 FROM ${OPENCLAW_NODE_BOOKWORM_IMAGE} AS build
 
-# Install Bun (required for build scripts)
-RUN curl -fsSL https://bun.sh/install | bash
+# Pin Bun to the same version used in CI (.github/actions/setup-node-env/action.yml).
+# Update here and in the action together when upgrading Bun.
+ARG BUN_VERSION=1.3.9
+RUN curl -fsSL https://bun.sh/install | BUN_INSTALL_VERSION="$BUN_VERSION" bash
 ENV PATH="/root/.bun/bin:${PATH}"
 
 RUN corepack enable
@@ -225,6 +227,6 @@ USER node
 #   - GET /healthz (liveness) and GET /readyz (readiness)
 #   - aliases: /health and /ready
 # For external access from host/ingress, override bind to "lan" and set auth.
-HEALTHCHECK --interval=3m --timeout=10s --start-period=15s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=5 \
   CMD node -e "fetch('http://127.0.0.1:18789/healthz').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 CMD ["node", "openclaw.mjs", "gateway", "--allow-unconfigured"]

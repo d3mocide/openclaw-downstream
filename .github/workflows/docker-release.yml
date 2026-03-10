@@ -20,6 +20,10 @@ concurrency:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  # provenance is disabled on all build steps: per-arch images are merged
+  # manually via `imagetools create` in the create-manifest job. Provenance
+  # attestation manifests produced by buildx conflict with that manual merge
+  # and break multi-arch manifest creation.
 
 jobs:
   # Build amd64 images (default + slim share the build stage cache)
